@@ -1,12 +1,20 @@
 #!/bin/sh
 
+CATEGORIA=""
+
 ! echo "$1" | grep "https*://\S\+\.[A-Za-z]\+\S*" >/dev/null &&
-# ! echo "$1" | grep "https*:\/\/\S*\bblog|feed|rss|news|xml*" >/dev/null &&
-	notify-send "That doesn't look like a full URL." && exit
+	# ! echo "$1" | grep "https*:\/\/\S*\bblog|feed|rss|news|xml*" >/dev/null &&
+	notify-send "Això no sembla un URL correcte." && exit
 	RSSFILE="${XDG_CONFIG_HOME:-$HOME/.config}/newsboat/urls"
 	if awk '{print $1}' "$RSSFILE" | grep "^$1$" >/dev/null; then
-		notify-send "You already have this RSS feed."
+		notify-send "Aquest canal RSS ja existeix."
 	else
-		echo "$1" >> "$RSSFILE" && notify-send "RSS feed added."
+		case $1 in
+			*"youtube"*)
+				CATEGORIA='"youtube"'
+				;;
+		esac
+
+		echo "$1 $CATEGORIA" >> "$RSSFILE" && notify-send "S'ha afegit un feed RSS."
 		sort -o $RSSFILE $RSSFILE
 	fi
