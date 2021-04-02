@@ -1,4 +1,5 @@
 # scripts
+Conjunt d'utilitats  per automatitzar processos
 
 ## rss-add
 
