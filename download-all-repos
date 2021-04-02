@@ -1,11 +1,11 @@
+#!/bin/bash
+
 #--------------------------------------------------------------------
 # Clona tots els repositoris de github.com d'un usuari específic
 #
 # Us:
 # download-all-repos <nom_usuari>
 #--------------------------------------------------------------------
-
-#!/bin/bash
 
 if [ $# -eq 0 ]
   then
