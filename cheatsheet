@@ -2,7 +2,7 @@
 
 # Aquest script mostra la xuleta de cheatsheets seleccionada a partir del llistat de dmenu
 
-QUERY="$(/usr/bin/ls $HOME/.local/repos/cheatsheets/*.md | cut -d/ -f7 |cut -d. -f1 | dmenu -i -l 30)"
+QUERY="$(/usr/bin/ls $HOME/.local/repos/cheatsheets/*.md | awk -F"[/.]" '{print $8}' | dmenu -i -l 30)"
 
 if [ -n "$QUERY" ]; then
 	$BROWSER "https://devhints.io/""$QUERY"
