@@ -15,3 +15,6 @@ Substitueix tots els espais dels noms dels arxius d'un directori determinat per 
 
 ## extract
 Extreu els arxius d'un arxiu comprimit sigui quina sigui la seva extensió
+
+## cheatsheet
+Mostra la xuleta seleccionada d'una llista de https://devhints.io/ des de dmenu  
