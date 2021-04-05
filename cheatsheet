@@ -1,8 +1,19 @@
 #!/bin/sh
 
-# Aquest script mostra la xuleta de cheatsheets seleccionada a partir del llistat de dmenu
+#------------------------------------------------------------------------------------------------------------------------------------
+# Devhints és una col·lecció de guies ràpides hospedada a: https://github.com/rstacruz/cheatsheets
+# Des de la web https://devhints.io/ es poden consultar les xuletes quan hom les necessita.
 
-QUERY="$(/usr/bin/ls $HOME/.local/repos/cheatsheets/*.md | awk -F"[/.]" '{print $8}' | dmenu -i -l 30)"
+# Amb aquest script es pot fer la cerca de la xuleta que necessitem, i un cop seleccionada obrirà la web amb la xuleta corresponent
+#------------------------------------------------------------------------------------------------------------------------------------
+
+
+#QUERY="$(cat ~/.local/bin/llistacheats.json | jq -r '.tree[].path' | grep '^[0-9a-z]*.md$' | awk -F. '{print $1}' | dmenu -i -l 30)"
+
+
+QUERY=$(curl -s "https://api.github.com/repos/rstacruz/cheatsheets/git/trees/master?recursive=1" | jq -r '.tree[].path' | grep '^[0-9a-z]*.md$' | awk -F. '{print $1}' | dmenu -i -l 30)
+
+#notify-send "'$QUERY'"
 
 if [ -n "$QUERY" ]; then
 	$BROWSER "https://devhints.io/""$QUERY"
