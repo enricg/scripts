@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
 #
 # Nom de l'script: dmconf
-# Descripció: per editar d'un llista d'srxius de configuració.
+# Descripció: per editar d'un llista d'arxius de configuració.
 # Dependències: dmenu
 # Llicència: https://www.github.com/enricg/scripts/LICENSE
 # Contributors: Derek Taylor
+# Author: Derek Taylor
 
 # Defining the text editor to use.
-# DMENUEDITOR="st -e vim"
 DMENUEDITOR="st -e $EDITOR"
-# DMEDITOR="emacsclient -c -a emacs"
 
 # An array of options to choose.
 # You can edit this list to add/remove config files.
@@ -63,7 +62,7 @@ if [[ "$choice" == "quit" ]]; then
 # What to do when/if we choose a file to edit.
 elif [ "$choice" ]; then
 	cfg=$(printf '%s\n' "${choice}" | awk '{print $NF}')
-	$DMEDITOR "$cfg"
+	$DMENUEDITOR $cfg
 
 # What to do if we just escape without choosing anything.
 else
