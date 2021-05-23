@@ -17,4 +17,8 @@ Substitueix tots els espais dels noms dels arxius d'un directori determinat per 
 Extreu els arxius d'un arxiu comprimit sigui quina sigui la seva extensió
 
 ## cheatsheet
-Mostra la xuleta seleccionada d'una llista de https://devhints.io/ des de dmenu  
+Mostra la xuleta seleccionada d'una llista de https://devhints.io/ des de dmenu
+
+## dmconf
+Script original de distrotube.
+Mostra, des de la utilitat dmenu, la llista d'arxius de configuració, i un cop seleccionat l'arxiu, l'obre amb l'editor que tenim per defecte
