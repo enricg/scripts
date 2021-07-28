@@ -32,4 +32,5 @@ while [ -z "$query" ]; do
 done
 
 # Display search results in web browser
-$BROWSER "$engineurl""$query"
+#$BROWSER "$engineurl""$query"
+brave "$engineurl""$query"
