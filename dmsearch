@@ -17,7 +17,7 @@ source ~/.local/bin/items/dmsearchItems
 
 # Picking a search engine.
 while [ -z "$engine" ]; do
-enginelist=$(printf '%s\n' "${options[@]}" | dmenu -i -l 30 -p 'Esull el motor de cerca:') || exit
+enginelist=$(printf '%s\n' "${options[@]}" | dmenu -i -l 30 -p 'Escull el motor de cerca:') || exit
 engineurl=$(echo "$enginelist" | awk '{print $NF}')
 engine=$(echo "$enginelist" | awk '{print $1}')
 done
@@ -25,9 +25,9 @@ done
 # Searching the chosen engine.
 while [ -z "$query" ]; do
     if [[ "$engine" == "quit" ]]; then
-        echo "Program terminated." && exit 0
+        echo "Programa finalitzat." && exit 0
     else
-        query=$(echo "$engine" | dmenu -p 'Enter search query:') || exit
+        query=$(echo "$engine" | dmenu -p 'Què vols buscar?') || exit
     fi
 done
 
