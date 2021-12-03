@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#
+# Nom de l'Script: dmrecordatori
+# Descripció: Afegeix un recordatori.
+# Dependències: dmenu and a web browser
+# GitHub: https://github.com/enricg/scripts
+# Llicència: https://www.github.com/enricg/scripts/LICENSE
+# Contributors: Enric G
+
+# La idea és la següent:
+# Primer seleccionem: una hora en concret, o quant temps a partir de que s'afegeix el missatge.
+# Un cop decidida el momen del recordatori, afegim el missatge.
