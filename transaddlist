@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# Script que llegeix magnets d'un arxiu i els afegeix a la cua de descàrregues
+
+while IFS= read -r line
+do
+	transmission-remote --add "$line" ;
+done < "$1"
+# done < ~/Descargas/magnets/cold_case_04.txt
