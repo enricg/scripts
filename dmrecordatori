@@ -51,4 +51,4 @@ done
 
 
 # Afegim l'alerta
-#echo notify-send "$missatge" | at -m "$horaalerta"
+echo notify-send "$missatge" | at -m "$horaalerta"
