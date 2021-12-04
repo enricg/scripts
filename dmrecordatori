@@ -41,13 +41,13 @@ do
 done
 
 ## Afegim el missatge de l'alerta
-#while [ -z "$missatge" ]; do
-#    if [[ "$horaalerta" == "Cancel·lar" ]]; then
-#        echo "Programa finalitzat." && exit 0
-#    else
-#        missatge=$(echo "$horaalerta" | dmenu -p 'Què vols buscar?') || exit
-#    fi
-#done
+while [ -z "$missatge" ]; do
+    if [[ "$horaalerta" == "Cancel·lar" ]]; then
+        echo "Programa finalitzat." && exit 0
+    else
+        missatge=$(echo "$horaalerta" | dmenu -p 'Què vols buscar?') || exit
+    fi
+done
 
 
 # Afegim l'alerta
