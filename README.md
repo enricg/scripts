@@ -1,5 +1,5 @@
 # scripts
-Conjunt d'utilitats  per automatitzar processos
+Conjunt d'utilitats per automatitzar processos
 
 ## rss-add
 
@@ -22,3 +22,7 @@ Mostra la xuleta seleccionada d'una llista de https://devhints.io/ des de dmenu
 ## dmconf
 Script original de distrotube.
 Mostra, des de la utilitat dmenu, la llista d'arxius de configuració, i un cop seleccionat l'arxiu, l'obre amb l'editor que tenim per defecte
+
+## dmrecordatori
+Script per afegir missatges recordatoris del dia.
+Fem ús de dmenu per seleccionar l'hora del recordatori, i at per afegir el missatge a l'hora seleccionada

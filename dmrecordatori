@@ -49,6 +49,7 @@ while [ -z "$missatge" ]; do
     fi
 done
 
-
 # Afegim l'alerta
+#echo notify-send "$missatge" && play -q -n synth 2 pluck C5 | at -m "$horaalerta"
 echo notify-send "$missatge" | at -m "$horaalerta"
+echo play -q -n synth 2 pluck C5 | at -m "$horaalerta"
