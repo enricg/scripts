@@ -5,8 +5,50 @@
 # Dependències: dmenu and a web browser
 # GitHub: https://github.com/enricg/scripts
 # Llicència: https://www.github.com/enricg/scripts/LICENSE
-# Contributors: Enric G
+# Autor: Enric G
 
 # La idea és la següent:
 # Primer seleccionem: una hora en concret, o quant temps a partir de que s'afegeix el missatge.
-# Un cop decidida el momen del recordatori, afegim el missatge.
+# Un cop decidida el moment del recordatori, afegim el missatge.
+
+# Guardem l'hora i el minut actual en variables
+hora=$(date +%H)
+minut=$(date +%M)
+echo "$hora:$minut"
+
+# Busquem l'hora i minut inicial a llistar
+until [ "$((minut%5))" == "0" ]
+do
+	((minut++))
+done
+
+until [ "$hora" -eq 24 ]
+do
+	until [ "$minut" -eq 60 ]
+	do
+		opcions+=("$hora:$minut")
+		((minut=minut+5))
+	done
+	minut=0
+	((hora++))
+done
+opcions+=("Cancel·lar")
+
+# Llista i selecciona al menú les hores i minuts
+while [ -z "$horaalerta" ];
+do
+	horaalerta=$(printf '%s\n' "${opcions[@]}" | dmenu -i -l 30 -p "Escull l'hora de l'alerta:") || exit
+done
+
+## Afegim el missatge de l'alerta
+#while [ -z "$missatge" ]; do
+#    if [[ "$horaalerta" == "Cancel·lar" ]]; then
+#        echo "Programa finalitzat." && exit 0
+#    else
+#        missatge=$(echo "$horaalerta" | dmenu -p 'Què vols buscar?') || exit
+#    fi
+#done
+
+
+# Afegim l'alerta
+#echo notify-send "$missatge" | at -m "$horaalerta"
