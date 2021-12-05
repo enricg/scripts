@@ -21,12 +21,19 @@ until [ "$((minut%5))" == "0" ]
 do
 	((minut++))
 done
+# Afegim 5 minuts de marge
+((minut=minut+5))
 
 until [ "$hora" -eq 24 ]
 do
 	until [ "$minut" -eq 60 ]
 	do
-		opcions+=("$hora:$minut")
+		if [ "$minut" -eq 0 ] || [ "$minut" -eq 5 ];
+		then
+			opcions+=("$hora:0$minut")
+		else
+			opcions+=("$hora:$minut")
+		fi
 		((minut=minut+5))
 	done
 	minut=0
@@ -42,14 +49,13 @@ done
 
 ## Afegim el missatge de l'alerta
 while [ -z "$missatge" ]; do
-    if [[ "$horaalerta" == "Cancel·lar" ]]; then
-        echo "Programa finalitzat." && exit 0
-    else
-        missatge=$(echo "$horaalerta" | dmenu -p 'Què vols buscar?') || exit
-    fi
+	if [[ "$horaalerta" == "Cancel·lar" ]]; then
+		echo "Programa finalitzat." && exit 0
+	else
+		missatge=$(echo "$horaalerta" | dmenu -p 'Què vols buscar?') || exit
+	fi
 done
 
 # Afegim l'alerta
-#echo notify-send "$missatge" && play -q -n synth 2 pluck C5 | at -m "$horaalerta"
 echo notify-send "$missatge" | at -m "$horaalerta"
 echo play -q -n synth 2 pluck C5 | at -m "$horaalerta"
