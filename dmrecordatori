@@ -14,15 +14,16 @@
 # Guardem l'hora i el minut actual en variables
 hora=$(date +%H)
 minut=$(date +%M)
-echo "$hora:$minut"
+#echo "$hora:$minut"
+
+# Afegim 5 minuts de marge
+((minut=minut+5))
 
 # Busquem l'hora i minut inicial a llistar
 until [ "$((minut%5))" == "0" ]
 do
 	((minut++))
 done
-# Afegim 5 minuts de marge
-((minut=minut+5))
 
 until [ "$hora" -eq 24 ]
 do
@@ -52,7 +53,7 @@ while [ -z "$missatge" ]; do
 	if [[ "$horaalerta" == "Cancel·lar" ]]; then
 		echo "Programa finalitzat." && exit 0
 	else
-		missatge=$(echo "$horaalerta" | dmenu -p 'Què vols buscar?') || exit
+		missatge=$(echo "$horaalerta" | dmenu -p 'Quin és el recordatori?') || exit
 	fi
 done
 
