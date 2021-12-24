@@ -9,7 +9,7 @@ declare -a options=(
 "cliki - https://www.cliki.net/site/search?query="
 "cnn - https://www.cnn.com/search?q="
 "coinbase - https://www.coinbase.com/price?query="
-"ctan" - https://ctan.org/search?phrase="
+"ctan - https://ctan.org/search?phrase="
 "debianpkg - https://packages.debian.org/search?suite=default&section=all&arch=any&searchon=names&keywords="
 "discogs - https://www.discogs.com/search/?&type=all&q="
 "duckduckgo - https://duckduckgo.com/?q="
