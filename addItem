@@ -1,0 +1,47 @@
+#!/bin/bash
+
+afegeix_llista(programa){
+
+# Guardem la pàgina web
+direccio=$(dialog --title "Afegir Items a llista" \
+	--stdout \
+	--inputbox "Escriu la direcció web:" 0 0)
+
+
+}
+
+
+# A quina llista afegirem l'item
+# checklist
+# radiolist
+llista=$(dialog --title "https://atareao.es" \
+	--stdout \
+	--menu "Selecciona una llista:" 0 0 3 \
+	1 "dmconfig" \
+	2 "dmsearch" \
+	3 "tutorialvids" \
+	4 "newsboat")
+	case $llista in
+		1)
+			afegeix_llista(1,)
+			;;
+		2)
+			afegeix_llista(2,)
+			;;
+		3)
+			afegeix_llista(3,)
+			;;
+		4)
+			afegeix_llista(4,)
+			;;
+		*)
+			;;
+	esac
+
+# Guardem el tema
+tema=$(dialog --title "Afegir Items a llista" \
+	--stdout \
+	--inputbox "Escriu el tema:" 0 0)
+
+echo "La direcció és: $direccio"
+echo "El tema és: $tema"

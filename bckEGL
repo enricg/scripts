@@ -1,0 +1,28 @@
+#!/bin/bash
+#
+# Script de copia de seguretat de linux a disc NAS.
+
+# —– Variables de configuració —–
+# NAS=192.168.2.41                                       # IP address or resolvable hostname of NAS
+ORIGEN=/home/enric                                      # Directory to be backed up
+# DESTI=/shares/enric/bckLaptopEGL                        # Backup destination on NAS
+DESTI=/mnt                        # Backup destination on NAS
+OPCIONS=-azv                                            # opcions rsync. n per simular (no copia)
+EXCLUDES=--exclude-from=/home/enric/.scripts/servername.excludes # Directoris a excluir
+
+# —– Fi d'edició de configuracío —–
+
+echo =========================================================================
+notify-send "Iniciant còpia de seguretat setmanal..." "$(date "+%H:%M:%S")";
+echo “Iniciant bckEGL.sh...”;
+date;
+
+# cadena="$OPCIONS $EXCLUDES $ORIGEN root@$NAS:$DESTI"
+cadena="$OPCIONS $EXCLUDES $ORIGEN $DESTI"
+nice rsync $cadena #| pv -lep -s 42 >/dev/null
+
+echo
+echo “Proces de copia bckEGL.sh finalitzat”;
+date;
+notify-send "Còpia de seguretat finalitzada" "$(date "+%H:%M:%S")";
+echo =========================================================================

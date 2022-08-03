@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# scripts per sincronitzar el calcurse amb el calendari remot.
+
+/usr/bin/notify-send "📰 Sincronitzant el calendari..."
+/usr/bin/calcurse-caldav
+/usr/bin/notify-send "📰 El calendari ja està sincronitzat."

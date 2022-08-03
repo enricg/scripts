@@ -1,0 +1,16 @@
+ 6774  $llista
+ 6775  echo $llista
+ 6776  exit
+ 6777  history -1000 > zzz.txt
+ 6778  less zzz.txt
+ 6779  exit
+ 6780  cat zzz.txt
+ 6781  exit
+ 6782  history -1
+ 6783  exit
+ 6784  p -Syu
+ 6785  ranger
+ 6786  pwd
+ 6787  ls
+ 6788  cd .local/bin
+ 6789  ls
