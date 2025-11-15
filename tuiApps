@@ -1,0 +1,300 @@
+#!/usr/bin/env zsh
+
+# Definició d'aplicacions per categoria
+# Format: "nom|comanda|tipus|descripció"
+typeset -a INTERNET=(
+    "Firefox|firefox|gui|Navegador web ràpid i segur de Mozilla"
+    "Chrome|google-chrome|gui|Navegador web de Google amb sincronització al núvol"
+    "wget|wget|term|Eina de descàrrega de fitxers des de la línia de comandes"
+)
+
+typeset -a DESENVOLUPAMENT=(
+    "VS Code|code|gui|Editor de codi modern amb extensions i terminal integrat"
+    "Terminal|gnome-terminal|gui|Emulador de terminal de GNOME"
+    "vim|vim|term|Editor de text modal potent per a la terminal"
+    "htop|htop|term|Monitor interactiu de processos del sistema"
+)
+
+# Variables globals
+CATEGORIES=("Internet" "Desenvolupament")
+VIEW="main"
+SELECTED=1
+CATEGORY=""
+MESSAGE=""
+
+# Control terminal
+hide_cursor() { echo -ne "\e[?25l"; }
+show_cursor() { echo -ne "\e[?25h"; }
+clear_screen() { echo -ne "\e[2J\e[H"; }
+move_to() { echo -ne "\e[$1;$2H"; }
+
+# Obtenir llista actual
+get_items() {
+    if [[ $VIEW == "main" ]]; then
+        for cat in "${CATEGORIES[@]}"; do
+            echo "$cat"
+        done
+    else
+        case "$CATEGORY" in
+            "Internet")
+                for item in "${INTERNET[@]}"; do
+                    echo "$item"
+                done
+                ;;
+            "Desenvolupament")
+                for item in "${DESENVOLUPAMENT[@]}"; do
+                    echo "$item"
+                done
+                ;;
+        esac
+    fi
+}
+
+# Dibuixar quadre
+draw_box() {
+    local row=$1
+    local col=$2
+    local width=$3
+    local height=$4
+
+    # Cantonades i línies
+    move_to $row $col
+    echo -ne "╔${(l:$((width-2))::═:)}╗"
+
+    local i
+    for ((i=1; i<height-1; i++)); do
+        move_to $((row + i)) $col
+        echo -ne "║${(l:$((width-2)):: :)}║"
+    done
+
+    move_to $((row + height - 1)) $col
+    echo -ne "╚${(l:$((width-2))::═:)}╝"
+}
+
+# Dibuixar text dins del quadre
+draw_text_in_box() {
+    local row=$1
+    local col=$2
+    local width=$3
+    local text="$4"
+
+    # Dividir text en línies que càpiguen dins del quadre
+    local max_width=$((width - 4))
+    local words=(${(s: :)text})
+    local line=""
+    local line_num=0
+
+    for word in $words; do
+        if [[ ${#line} -eq 0 ]]; then
+            line="$word"
+        elif [[ $((${#line} + ${#word} + 1)) -le $max_width ]]; then
+            line="$line $word"
+        else
+            move_to $((row + line_num)) $((col + 2))
+            echo -ne "$line"
+            line="$word"
+            ((line_num++))
+        fi
+    done
+
+    # Última línia
+    if [[ ${#line} -gt 0 ]]; then
+        move_to $((row + line_num)) $((col + 2))
+        echo -ne "$line"
+    fi
+}
+
+# Dibuixar menú
+draw() {
+    clear_screen
+    local w=$(tput cols)
+    local h=$(tput lines)
+
+    # Títol
+    local title="CATEGORIES"
+    [[ $VIEW == "category" ]] && title="$CATEGORY"
+    move_to 1 $(( (w - ${#title}) / 2 ))
+    echo -ne "\e[1;34m=== $title ===\e[0m"
+
+    # Items
+    local -a items
+    while IFS= read -r line; do
+        [[ -n $line ]] && items+=("$line")
+    done < <(get_items)
+
+    local i=1
+    local max_items=10
+    for item in "${items[@]}"; do
+        [[ $i -gt $max_items ]] && break
+
+        local name="${item%%|*}"
+        move_to $((i + 3)) 5
+
+        if [[ $i -eq $SELECTED ]]; then
+            echo -ne "\e[7;1m► $name\e[0m"
+        else
+            echo -ne "  $name"
+        fi
+        ((i++))
+    done
+
+    # Quadre de descripció (només si no estem al menú principal)
+    if [[ $VIEW == "category" ]]; then
+        local selected_item="${items[$SELECTED]}"
+        local parts=(${(s:|:)selected_item})
+        local desc="${parts[4]}"
+
+        if [[ -n $desc ]]; then
+            local box_width=60
+            local box_height=6
+            local box_row=5
+            local box_col=$(( w - box_width - 5 ))
+
+            # Dibuixar el quadre
+            echo -ne "\e[36m"  # Color cyan
+            draw_box $box_row $box_col $box_width $box_height
+            echo -ne "\e[0m"
+
+            # Títol del quadre
+            move_to $((box_row + 1)) $((box_col + 2))
+            echo -ne "\e[1;33m${parts[1]}\e[0m"
+
+            # Línia separadora
+            move_to $((box_row + 2)) $((box_col + 1))
+            echo -ne "├${(l:$((box_width-2))::─:)}┤"
+
+            # Descripció
+            draw_text_in_box $((box_row + 3)) $box_col $box_width "$desc"
+        fi
+    fi
+
+    # Missatge
+    if [[ -n $MESSAGE ]]; then
+        move_to $((h - 3)) $(( (w - ${#MESSAGE}) / 2 ))
+        echo -ne "\e[1m$MESSAGE\e[0m"
+    fi
+
+    # Ajuda
+    local help="↑/↓: Navegar | ENTER: "
+    [[ $VIEW == "main" ]] && help="${help}Obrir" || help="${help}Executar"
+    [[ $VIEW == "category" ]] && help="$help | ESC: Tornar"
+    help="$help | q: Sortir"
+    move_to $((h - 1)) $(( (w - ${#help}) / 2 ))
+    echo -ne "\e[2m$help\e[0m"
+}
+
+# Executar aplicació
+execute() {
+    local -a items
+    while IFS= read -r line; do
+        [[ -n $line ]] && items+=("$line")
+    done < <(get_items)
+
+    local item="${items[$SELECTED]}"
+    local parts=(${(s:|:)item})
+    local name="${parts[1]}"
+    local cmd="${parts[2]}"
+    local type="${parts[3]}"
+
+    if ! command -v "${cmd%% *}" &>/dev/null; then
+        MESSAGE="✗ No s'ha trobat: ${cmd%% *}"
+        return
+    fi
+
+    if [[ $type == "term" ]]; then
+        show_cursor
+        clear_screen
+        stty echo
+
+        echo "\e[1mExecutant: $name\e[0m"
+        echo "─────────────────────"
+        eval $cmd
+        echo "─────────────────────"
+        echo "\nPrem qualsevol tecla..."
+        read -k1
+
+        stty -echo
+        hide_cursor
+        MESSAGE="✓ Executat: $name"
+    else
+        nohup $cmd &>/dev/null &
+        MESSAGE="✓ Iniciat: $name"
+    fi
+}
+
+# Obtenir nombre total d'items
+get_total() {
+    local count=0
+    while IFS= read -r line; do
+        [[ -n $line ]] && ((count++))
+    done < <(get_items)
+    echo $count
+}
+
+# Neteja i sortida
+cleanup() {
+    show_cursor
+    clear_screen
+    stty echo
+    exit 0
+}
+
+trap cleanup INT TERM EXIT
+stty -echo
+hide_cursor
+
+# Bucle principal
+while true; do
+    draw
+
+    # Llegir tecla
+    read -k1 key
+
+    # Gestionar seqüències d'escape (fletxes)
+    if [[ $key == $'\e' ]]; then
+        read -k2 rest
+        key="$rest"
+    fi
+
+    local total=$(get_total)
+
+    case "$key" in
+        '[A') # Fletxa amunt
+            if [[ $SELECTED -gt 1 ]]; then
+                ((SELECTED--))
+                MESSAGE=""
+            fi
+            ;;
+        '[B') # Fletxa avall
+            if [[ $SELECTED -lt $total ]]; then
+                ((SELECTED++))
+                MESSAGE=""
+            fi
+            ;;
+        $'\n') # Enter
+            if [[ $VIEW == "main" ]]; then
+                local -a items
+                while IFS= read -r line; do
+                    [[ -n $line ]] && items+=("$line")
+                done < <(get_items)
+
+                CATEGORY="${items[$SELECTED]}"
+                VIEW="category"
+                SELECTED=1
+                MESSAGE=""
+            else
+                execute
+            fi
+            ;;
+        '[D'|'') # Fletxa esquerra o ESC
+            if [[ $VIEW == "category" ]]; then
+                VIEW="main"
+                SELECTED=1
+                MESSAGE=""
+            fi
+            ;;
+        'q'|'Q')
+            cleanup
+            ;;
+    esac
+done
