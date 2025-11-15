@@ -1,0 +1,16 @@
+# Script que converteix les imatges nef de la carpeta a jpg
+
+#find . -type f \( -iname "*.raw" -o -iname "*.nef" \) -exec sh -c 'darktable-cli {} ${0%.*}.jpg' {} \;
+#mkdir -p NEF JPG && find . -type f \( -iname "*.raw" -o -iname "*.nef" \) -exec sh -c '
+#    darktable-cli "{}" "${0%.*}.jpg" &&
+#    mv "${0%.*}.jpg" JPG &&
+#    [ "${0##*.}" = "NEF" ] && mv "{}" NEF
+#' {} \;
+
+mkdir -p NEF JPG && find . -type f \( -iname "*.raw" -o -iname "*.nef" \) -exec sh -c '
+    infile="$1"
+    outfile="${infile%.*}.jpg"
+    darktable-cli "$infile" "$outfile" &&
+    mv "$outfile" JPG &&
+    [ "${infile##*.}" = "NEF" ] && mv "$infile" NEF
+' sh {} \;

@@ -1,0 +1,203 @@
+#!/usr/bin/env bash
+# by austin staton 2024
+# downloadthings script
+# Modificació: Enric 2025
+
+# Function to install a single dependency using common package managers
+#install_dependency() {
+#    local dep="$1"
+#    echo -e "\e[94m$dep is not installed. Installing...\e[0m"
+#
+#    if command -v apt &>/dev/null; then
+#        sudo apt update && sudo apt install -y "$dep"
+#    elif command -v dnf &>/dev/null; then
+#        sudo dnf install -y "$dep"
+#    elif command -v yum &>/dev/null; then
+#        sudo yum install -y "$dep"
+#    elif command -v pacman &>/dev/null; then
+#        sudo pacman -Sy --noconfirm "$dep"
+#    elif command -v zypper &>/dev/null; then
+#        sudo zypper install -y "$dep"
+#    elif command -v brew &>/dev/null; then
+#        brew install "$dep"
+#    else
+#        echo -e "\e[91mPackage manager not recognized. Please install $dep manually.\e[0m"
+#        exit 1
+#    fi
+#}
+
+# Function to check and install dependencies
+#check_dependencies() {
+#    echo -e "\e[94mChecking for required dependencies...\e[0m"
+#
+#    # List all dependencies here
+#    for dep in yt-dlp wget wkhtmltopdf aria2 httrack; do
+#        if ! command -v "$dep" &>/dev/null; then
+#            install_dependency "$dep"
+#        fi
+#    done
+#
+#    echo -e "\e[94mAll dependencies are installed! Getting things ready...\e[0m"
+#}
+
+# Functions for various tasks
+grabvideoBest() {
+    yt-dlp --console-title --geo-bypass --no-check-certificates -v \
+        -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best' "$1"
+}
+
+grabAudioBest() {
+    yt-dlp --console-title --geo-bypass --no-check-certificates -v -x \
+        --audio-format best --audio-quality 0 "$1"
+}
+
+PlaylistgrabvideoBest() {
+    yt-dlp --console-title --geo-bypass --no-check-certificates -v \
+        -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best' --yes-playlist "$1"
+}
+
+PlaylistgrabAudioBest() {
+    yt-dlp --console-title --geo-bypass --no-check-certificates -v -x \
+        --audio-format best --audio-quality 0 --yes-playlist "$1"
+}
+
+grabwebpage() {
+    wget -p -r --html-extension --convert-links -E -k -l 1 -np "$1"
+}
+
+grabwebpagePlus() {
+    local url="$1"
+    # Remove trailing slash
+    url="${url%/}"
+
+    # Derive a folder name from the URL
+    local folderName
+    folderName=$(basename "$url")
+
+    # If empty, use fallback
+    if [ -z "$folderName" ]; then
+        folderName="downloaded_site"
+    fi
+
+    wget -p -r --html-extension --convert-links -E -k -l 1 -np \
+        -P "./$folderName" "$url" && \
+    wkhtmltopdf "$url" "./$folderName/${folderName}.pdf"
+}
+
+grabWithAria2() {
+    aria2c -x 16 "$1"
+}
+
+grabWebsiteHTTrack() {
+    httrack "$1" -O ./downloaded_sites
+}
+
+# New function for simply downloading an image
+grabImageWithWget() {
+    local url="$1"
+    echo -e "\e[94mDownloading image from URL: $url\e[0m"
+    wget -O downloaded_image.jpg "$url"
+    echo -e "\e[94mImage downloaded as downloaded_image.jpg\e[0m"
+}
+
+# Updated 'explain_options' with color codes and new option #9
+explain_options() {
+    echo -e "\e[94mExplanation of Options:\e[0m"
+    echo -e "\e[94m1. Download a single video: Download the best quality video using yt-dlp.\e[0m"
+    echo -e "\e[94m2. Download a single audio file: Extract and download the best audio format using yt-dlp.\e[0m"
+    echo -e "\e[94m3. Download a playlist of videos: Download a playlist of videos using yt-dlp.\e[0m"
+    echo -e "\e[94m4. Download a playlist of audio files: Extract audio from a playlist using yt-dlp.\e[0m"
+    echo -e "\e[94m5. Download a webpage (basic): Save a webpage using wget.\e[0m"
+#    echo -e "\e[94m6. Download a webpage and convert it to PDF: Use wget and wkhtmltopdf.\e[0m"
+    echo -e "\e[94m7. Download using aria2: Download files with high-speed segmentation.\e[0m"
+    echo -e "\e[94m8. Mirror a website with HTTrack: Download an entire website for offline browsing.\e[0m"
+    echo -e "\e[94m9. Download an image using wget: Retrieve a remote image URL and save it locally.\e[0m"
+    echo -e "\e[31m10. Exit: Exit the script.\e[0m"
+
+    echo -e "\n\e[33m---- List of Functions Used in This Script ----\e[0m"
+    echo -e "\e[92m- check_dependencies        # Checks and installs dependencies\n\
+- grabvideoBest            # Downloads best-quality video using yt-dlp\n\
+- grabAudioBest            # Downloads best-quality audio using yt-dlp\n\
+- PlaylistgrabvideoBest    # Downloads a playlist of best-quality videos\n\
+- PlaylistgrabAudioBest    # Downloads a playlist of best-quality audio\n\
+- grabwebpage              # Downloads a webpage using wget\n\
+- grabwebpagePlus          # Downloads a webpage + converts it to PDF\n\
+- grabWithAria2            # Downloads a file using aria2 with segmentation\n\
+- grabWebsiteHTTrack       # Mirrors a website with HTTrack\n\
+- grabImageWithWget        # Downloads an image from a URL\n\
+- explain_options          # Shows this explanation of options\n\
+- main_menu                # Displays the main menu options\e[0m"
+}
+
+main_menu() {
+    echo -e "\e[32mWelcome to Media Downloader slash Download Things Script lol\e[0m"
+    echo -e "\e[33mNOTE: For some downloads, you might need to use a VPN. Ensure your VPN is active if necessary.\e[0m"
+    echo -e "\e[94mPlease select an option:\e[0m"
+    echo -e "\e[94m1. Download a single video\e[0m"
+    echo -e "\e[94m2. Download a single audio file\e[0m"
+    echo -e "\e[94m3. Download a playlist of videos\e[0m"
+    echo -e "\e[94m4. Download a playlist of audio files\e[0m"
+    echo -e "\e[94m5. Download a webpage (basic)\e[0m"
+#    echo -e "\e[94m6. Download a webpage and convert that webpage to PDF as well\e[0m"
+    echo -e "\e[94m7. Download using aria2\e[0m"
+    echo -e "\e[94m8. Mirror a website with HTTrack\e[0m"
+    echo -e "\e[94m9. Download an image using wget\e[0m"
+    echo -e "\e[94m10. Explain each option\e[0m"
+    echo -e "\e[31m11. Exit\e[0m"
+    read -rp "Enter your choice (1-11): " choice
+
+    case $choice in
+        1)
+            read -rp "Enter video URL: " url
+            grabvideoBest "$url"
+            ;;
+        2)
+            read -rp "Enter audio URL: " url
+            grabAudioBest "$url"
+            ;;
+        3)
+            read -rp "Enter playlist URL: " url
+            PlaylistgrabvideoBest "$url"
+            ;;
+        4)
+            read -rp "Enter playlist URL: " url
+            PlaylistgrabAudioBest "$url"
+            ;;
+        5)
+            read -rp "Enter webpage URL: " url
+            grabwebpage "$url"
+            ;;
+#        6)
+#            read -rp "Enter webpage URL: " url
+#            grabwebpagePlus "$url"
+#            ;;
+        7)
+            read -rp "Enter file URL: " url
+            grabWithAria2 "$url"
+            ;;
+        8)
+            read -rp "Enter website URL to mirror: " url
+            grabWebsiteHTTrack "$url"
+            ;;
+        9)
+            echo -e "\e[94mEnter image file URL:\e[0m"
+            read -rp "" imgURL
+            grabImageWithWget "$imgURL"
+            ;;
+        10)
+            explain_options
+            ;;
+        11)
+            echo -e "\e[92mExiting. Goodbye!\e[0m"
+            exit 0
+            ;;
+        *)
+            echo -e "\e[91mInvalid choice. Please try again.\e[0m"
+            main_menu
+            ;;
+    esac
+}
+
+# Start script
+# check_dependencies
+main_menu
