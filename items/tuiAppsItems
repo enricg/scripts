@@ -1,0 +1,14 @@
+# Configuració del llançador d'aplicacions
+# Format: categoria|nom|comanda|tipus|descripció
+# Tipus: gui o term
+
+[Internet]
+Firefox|firefox|gui|Navegador web ràpid i segur de Mozilla
+Chrome|google-chrome|gui|Navegador web de Google amb sincronització al núvol
+wget|wget|term|Eina de descàrrega de fitxers des de la línia de comandes
+
+[Desenvolupament]
+VS Code|code|gui|Editor de codi modern amb extensions i terminal integrat
+Terminal|gnome-terminal|gui|Emulador de terminal de GNOME
+vim|vim|term|Editor de text modal potent per a la terminal
+htop|htop|term|Monitor interactiu de processos del sistema

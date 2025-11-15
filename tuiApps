@@ -1,22 +1,11 @@
 #!/usr/bin/env zsh
 
-# Definició d'aplicacions per categoria
-# Format: "nom|comanda|tipus|descripció"
-typeset -a INTERNET=(
-    "Firefox|firefox|gui|Navegador web ràpid i segur de Mozilla"
-    "Chrome|google-chrome|gui|Navegador web de Google amb sincronització al núvol"
-    "wget|wget|term|Eina de descàrrega de fitxers des de la línia de comandes"
-)
-
-typeset -a DESENVOLUPAMENT=(
-    "VS Code|code|gui|Editor de codi modern amb extensions i terminal integrat"
-    "Terminal|gnome-terminal|gui|Emulador de terminal de GNOME"
-    "vim|vim|term|Editor de text modal potent per a la terminal"
-    "htop|htop|term|Monitor interactiu de processos del sistema"
-)
+# Fitxer de configuració
+CONFIG_FILE="${HOME}/.local/bin/items/tuiAppsItems"
 
 # Variables globals
-CATEGORIES=("Internet" "Desenvolupament")
+typeset -A APPS_BY_CATEGORY
+typeset -a CATEGORIES
 VIEW="main"
 SELECTED=1
 CATEGORY=""
@@ -28,25 +17,77 @@ show_cursor() { echo -ne "\e[?25h"; }
 clear_screen() { echo -ne "\e[2J\e[H"; }
 move_to() { echo -ne "\e[$1;$2H"; }
 
+# Crear fitxer de configuració per defecte
+create_default_config() {
+    local dir="${CONFIG_FILE%/*}"
+    mkdir -p "$dir"
+
+    cat > "$CONFIG_FILE" << 'EOF'
+# Configuració del llançador d'aplicacions
+# Format: nom|comanda|tipus|descripció
+# Tipus: gui o term
+
+[Internet]
+Firefox|firefox|gui|Navegador web ràpid i segur de Mozilla
+Chrome|google-chrome|gui|Navegador web de Google amb sincronització al núvol
+wget|wget|term|Eina de descàrrega de fitxers des de la línia de comandes
+
+[Desenvolupament]
+VS Code|code|gui|Editor de codi modern amb extensions i terminal integrat
+Terminal|gnome-terminal|gui|Emulador de terminal de GNOME
+vim|vim|term|Editor de text modal potent per a la terminal
+htop|htop|term|Monitor interactiu de processos del sistema
+EOF
+}
+
+# Carregar aplicacions des del fitxer
+load_config() {
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        create_default_config
+    fi
+
+    APPS_BY_CATEGORY=()
+    CATEGORIES=()
+
+    local current_category=""
+    local line
+
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        # Eliminar espais al principi i final
+        line="${line## }"
+        line="${line%% }"
+
+        # Ignorar línies buides i comentaris
+        [[ -z "$line" ]] && continue
+        [[ "$line" == \#* ]] && continue
+
+        # Detectar categoria
+        if [[ "$line" == \[*\] ]]; then
+            current_category="${line#\[}"
+            current_category="${current_category%\]}"
+            CATEGORIES+=("$current_category")
+            continue
+        fi
+
+        # Afegir aplicació a la categoria actual
+        if [[ -n "$current_category" ]]; then
+            if [[ -z "${APPS_BY_CATEGORY[$current_category]}" ]]; then
+                APPS_BY_CATEGORY[$current_category]="$line"
+            else
+                APPS_BY_CATEGORY[$current_category]="${APPS_BY_CATEGORY[$current_category]}"$'\n'"$line"
+            fi
+        fi
+    done < "$CONFIG_FILE"
+}
+
 # Obtenir llista actual
 get_items() {
     if [[ $VIEW == "main" ]]; then
-        for cat in "${CATEGORIES[@]}"; do
-            echo "$cat"
-        done
+        printf '%s\n' "${CATEGORIES[@]}"
     else
-        case "$CATEGORY" in
-            "Internet")
-                for item in "${INTERNET[@]}"; do
-                    echo "$item"
-                done
-                ;;
-            "Desenvolupament")
-                for item in "${DESENVOLUPAMENT[@]}"; do
-                    echo "$item"
-                done
-                ;;
-        esac
+        if [[ -n "${APPS_BY_CATEGORY[$CATEGORY]}" ]]; then
+            echo "${APPS_BY_CATEGORY[$CATEGORY]}"
+        fi
     fi
 }
 
@@ -57,11 +98,9 @@ draw_box() {
     local width=$3
     local height=$4
 
-    # Cantonades i línies
     move_to $row $col
     echo -ne "╔${(l:$((width-2))::═:)}╗"
 
-    local i
     for ((i=1; i<height-1; i++)); do
         move_to $((row + i)) $col
         echo -ne "║${(l:$((width-2)):: :)}║"
@@ -78,7 +117,6 @@ draw_text_in_box() {
     local width=$3
     local text="$4"
 
-    # Dividir text en línies que càpiguen dins del quadre
     local max_width=$((width - 4))
     local words=(${(s: :)text})
     local line=""
@@ -97,7 +135,6 @@ draw_text_in_box() {
         fi
     done
 
-    # Última línia
     if [[ ${#line} -gt 0 ]]; then
         move_to $((row + line_num)) $((col + 2))
         echo -ne "$line"
@@ -119,13 +156,22 @@ draw() {
     # Items
     local -a items
     while IFS= read -r line; do
-        [[ -n $line ]] && items+=("$line")
+        [[ -n "$line" ]] && items+=("$line")
     done < <(get_items)
 
+    # Debug info
+    if [[ ${#items} -eq 0 ]]; then
+        move_to 5 5
+        echo -ne "\e[1;31mNo hi ha items per mostrar\e[0m"
+        move_to 6 5
+        echo -ne "VIEW: $VIEW | CATEGORY: $CATEGORY"
+        move_to 7 5
+        echo -ne "Categories carregades: ${#CATEGORIES}"
+    fi
+
     local i=1
-    local max_items=10
     for item in "${items[@]}"; do
-        [[ $i -gt $max_items ]] && break
+        [[ $i -gt 15 ]] && break
 
         local name="${item%%|*}"
         move_to $((i + 3)) 5
@@ -138,8 +184,8 @@ draw() {
         ((i++))
     done
 
-    # Quadre de descripció (només si no estem al menú principal)
-    if [[ $VIEW == "category" ]]; then
+    # Quadre de descripció
+    if [[ $VIEW == "category" && ${#items} -gt 0 ]]; then
         local selected_item="${items[$SELECTED]}"
         local parts=(${(s:|:)selected_item})
         local desc="${parts[4]}"
@@ -150,20 +196,16 @@ draw() {
             local box_row=5
             local box_col=$(( w - box_width - 5 ))
 
-            # Dibuixar el quadre
-            echo -ne "\e[36m"  # Color cyan
+            echo -ne "\e[36m"
             draw_box $box_row $box_col $box_width $box_height
             echo -ne "\e[0m"
 
-            # Títol del quadre
             move_to $((box_row + 1)) $((box_col + 2))
             echo -ne "\e[1;33m${parts[1]}\e[0m"
 
-            # Línia separadora
             move_to $((box_row + 2)) $((box_col + 1))
             echo -ne "├${(l:$((box_width-2))::─:)}┤"
 
-            # Descripció
             draw_text_in_box $((box_row + 3)) $box_col $box_width "$desc"
         fi
     fi
@@ -178,7 +220,7 @@ draw() {
     local help="↑/↓: Navegar | ENTER: "
     [[ $VIEW == "main" ]] && help="${help}Obrir" || help="${help}Executar"
     [[ $VIEW == "category" ]] && help="$help | ESC: Tornar"
-    help="$help | q: Sortir"
+    help="$help | e: Editar | q: Sortir"
     move_to $((h - 1)) $(( (w - ${#help}) / 2 ))
     echo -ne "\e[2m$help\e[0m"
 }
@@ -187,8 +229,10 @@ draw() {
 execute() {
     local -a items
     while IFS= read -r line; do
-        [[ -n $line ]] && items+=("$line")
+        [[ -n "$line" ]] && items+=("$line")
     done < <(get_items)
+
+    [[ ${#items} -eq 0 ]] && return
 
     local item="${items[$SELECTED]}"
     local parts=(${(s:|:)item})
@@ -222,11 +266,28 @@ execute() {
     fi
 }
 
+# Editar configuració
+edit_config() {
+    show_cursor
+    clear_screen
+    stty echo
+
+    ${EDITOR:-nano} "$CONFIG_FILE"
+
+    stty -echo
+    hide_cursor
+
+    load_config
+    VIEW="main"
+    SELECTED=1
+    MESSAGE="✓ Configuració recarregada"
+}
+
 # Obtenir nombre total d'items
 get_total() {
     local count=0
     while IFS= read -r line; do
-        [[ -n $line ]] && ((count++))
+        [[ -n "$line" ]] && ((count++))
     done < <(get_items)
     echo $count
 }
@@ -243,14 +304,15 @@ trap cleanup INT TERM EXIT
 stty -echo
 hide_cursor
 
+# Carregar configuració
+load_config
+
 # Bucle principal
 while true; do
     draw
 
-    # Llegir tecla
     read -k1 key
 
-    # Gestionar seqüències d'escape (fletxes)
     if [[ $key == $'\e' ]]; then
         read -k2 rest
         key="$rest"
@@ -259,39 +321,44 @@ while true; do
     local total=$(get_total)
 
     case "$key" in
-        '[A') # Fletxa amunt
+        '[A')
             if [[ $SELECTED -gt 1 ]]; then
                 ((SELECTED--))
                 MESSAGE=""
             fi
             ;;
-        '[B') # Fletxa avall
+        '[B')
             if [[ $SELECTED -lt $total ]]; then
                 ((SELECTED++))
                 MESSAGE=""
             fi
             ;;
-        $'\n') # Enter
+        $'\n')
             if [[ $VIEW == "main" ]]; then
-                local -a items
-                while IFS= read -r line; do
-                    [[ -n $line ]] && items+=("$line")
-                done < <(get_items)
+                if [[ $total -gt 0 ]]; then
+                    local -a items
+                    while IFS= read -r line; do
+                        [[ -n "$line" ]] && items+=("$line")
+                    done < <(get_items)
 
-                CATEGORY="${items[$SELECTED]}"
-                VIEW="category"
-                SELECTED=1
-                MESSAGE=""
+                    CATEGORY="${items[$SELECTED]}"
+                    VIEW="category"
+                    SELECTED=1
+                    MESSAGE=""
+                fi
             else
                 execute
             fi
             ;;
-        '[D'|'') # Fletxa esquerra o ESC
+        '[D'|'')
             if [[ $VIEW == "category" ]]; then
                 VIEW="main"
                 SELECTED=1
                 MESSAGE=""
             fi
+            ;;
+        'e'|'E')
+            edit_config
             ;;
         'q'|'Q')
             cleanup
