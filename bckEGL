@@ -6,7 +6,9 @@
 # NAS=192.168.2.41                                       # IP address or resolvable hostname of NAS
 ORIGEN=/home/enric                                      # Directory to be backed up
 # DESTI=/shares/enric/bckLaptopEGL                        # Backup destination on NAS
-DESTI=/mnt                        # Backup destination on NAS
+#DESTI=/mnt                        # Backup destination on NAS
+#DESTI=/media/enric/Elements
+DESTI=/run/media/enric/Elements
 OPCIONS=-azv                                            # opcions rsync. n per simular (no copia)
 EXCLUDES=--exclude-from=/home/enric/.scripts/servername.excludes # Directoris a excluir
 
